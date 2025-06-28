@@ -4,7 +4,7 @@ import axios from 'axios';
 import './CalculatorPage.css';
 
 // !! IMPORTANT: Replace with your backend URL
-const API_URL = "YOUR_BACKEND_URL_HERE/api/ofdm-systems";
+const API_URL = "https://wireless-project-gokp.onrender.com/api/ofdm-systems";
 
 function OfdmPage() {
     const [formData, setFormData] = useState({
