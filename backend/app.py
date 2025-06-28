@@ -1,4 +1,4 @@
-# backend/app.py (Temporary Debugging Version)
+# backend/app.py (Final Production Version)
 import os
 from flask import Flask, jsonify, request
 from dotenv import load_dotenv
@@ -10,23 +10,25 @@ app = Flask(__name__)
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # --- Manual CORS Header Function ---
-# This function will be called after every request to add the necessary headers.
+# This function is called after every request to add the necessary headers.
 @app.after_request
 def after_request(response):
     header = response.headers
-    header['Access-Control-Allow-Origin'] = '*'
+    header['Access-Control-Allow-Origin'] = '*' # Allow any domain to make requests
     header['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-    header['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS' # Added GET for our test
+    header['Access-Control-Allow-Methods'] = 'POST, OPTIONS' # Specify allowed methods
     return response
 
-# --- Helper function for generating prompts (NO CHANGE) ---
+
+# --- Helper function for generating prompts ---
 def get_ai_explanation(scenario_name, inputs, results):
-    # This function remains exactly the same
     prompt = f"""
     Act as an expert wireless communications engineer explaining results to a student.
+
     Scenario: {scenario_name}
     The student provided these inputs: {inputs}
     Our calculations produced these results: {results}
+    
     Please provide a clear, user-friendly explanation based on the scenario.
     For Wireless System, explain each block's impact on data rate.
     For OFDM, explain data rate and spectral efficiency.
@@ -45,9 +47,8 @@ def get_ai_explanation(scenario_name, inputs, results):
     except Exception as e:
         return f"Could not get AI explanation: {e}"
 
-# --- Refactored API Endpoint (NO CHANGE) ---
+# --- Refactored API Endpoint ---
 def create_api_endpoint(calculation_function, scenario_name):
-    # This function remains exactly the same
     data = request.get_json()
     if not data:
         return jsonify({"error": "Invalid request body"}), 400
@@ -60,20 +61,11 @@ def create_api_endpoint(calculation_function, scenario_name):
         "aiExplanation": ai_explanation
     })
 
-# --- Routes (WITH MODIFICATION FOR TESTING) ---
-
-# MODIFIED ROUTE FOR TESTING
-@app.route("/api/wireless-system", methods=['GET', 'POST'])
+# --- Routes ---
+@app.route("/api/wireless-system", methods=['POST'])
 def handle_wireless_system():
-    # If the browser sends a GET request for our test, send a simple response
-    if request.method == 'GET':
-        return jsonify({"message": "GET request successful. Check the response headers for CORS."})
-    
-    # If it's a normal POST request from our app, run the calculation
-    if request.method == 'POST':
-        return create_api_endpoint(calculate_wireless_system_logic, "Wireless Communication System")
+    return create_api_endpoint(calculate_wireless_system_logic, "Wireless Communication System")
 
-# --- UNCHANGED ROUTES ---
 @app.route("/api/ofdm-systems", methods=['POST'])
 def handle_ofdm():
     return create_api_endpoint(calculate_ofdm_logic, "OFDM System")
