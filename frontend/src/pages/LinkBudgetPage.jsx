@@ -4,7 +4,7 @@ import axios from 'axios';
 import './CalculatorPage.css';
 
 // !! IMPORTANT: Replace with your backend URL
-const API_URL = "YOUR_BACKEND_URL_HERE/api/link-budget";
+const API_URL = "https://wireless-project-qokp.onrender.com";
 
 function LinkBudgetPage() {
     const [formData, setFormData] = useState({
