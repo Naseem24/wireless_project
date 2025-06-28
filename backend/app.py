@@ -1,208 +1,77 @@
-# backend/app.py
+# backend/app.py (Final Version)
 import os
-from flask import Flask, jsonify, request  # <-- The 'request' object is now correctly imported here
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from dotenv import load_dotenv
 from openai import OpenAI
 from calculations import calculate_wireless_system_logic, calculate_ofdm_logic, calculate_link_budget_logic, calculate_cellular_design_logic
 
-# Load environment variables from the .env file
 load_dotenv()
-
-# Initialize the Flask app
 app = Flask(__name__)
 
-# --- CONFIGURATION ---
-# Enable Cross-Origin Resource Sharing (CORS)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
-# Initialize the OpenAI client with the API key
+# --- FINAL CORS CONFIGURATION ---
+# This more direct configuration applies the headers to all routes.
+CORS(app, supports_credentials=True)
+
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-
-# --- API ENDPOINTS ---
-@app.route("/api/test")
-def test_endpoint():
-    """A simple test endpoint to check if the backend is running."""
-    try:
-        completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": "Say 'AI connection is successful.'"}
-            ],
-            max_tokens=15
-        )
-        ai_message = completion.choices[0].message.content
-        return jsonify({
-            "backend_status": "Backend is running and connected!",
-            "ai_status": ai_message
-            })
-    except Exception as e:
-        return jsonify({"error": f"AI connection failed: {str(e)}"}), 500
-
-@app.route("/api/wireless-system", methods=['POST'])
-def handle_wireless_system():
-    """Receives data, gets calculation and AI explanation, returns all."""
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "Invalid request body"}), 400
-
-    numerical_results = calculate_wireless_system_logic(data)
-    if "error" in numerical_results:
-        return jsonify(numerical_results), 400
-
+# --- Helper function for generating prompts (NO CHANGE HERE) ---
+def get_ai_explanation(scenario_name, inputs, results):
     prompt = f"""
     Act as an expert wireless communications engineer explaining results to a student.
 
-    Scenario: Wireless Communication System Block Rates
-    The student provided these inputs: {data}
-    We calculated the following rates at the output of each block: {numerical_results}
+    Scenario: {scenario_name}
+    The student provided these inputs: {inputs}
+    Our calculations produced these results: {results}
     
-    Please provide a clear, user-friendly explanation. For each block (Sampler, Quantizer, Source Coder, Channel Coder, Interleaver), explain:
-    1.  What the block's purpose is in one simple sentence.
-    2.  Why the data rate changed (or didn't change) at its output. For example, "The source coder compressed the data, reducing the rate..." or "The interleaver re-arranges bits to fight burst errors and does not change the data rate."
-    Finally, explain how the burst duration was calculated from the final rate.
-    """
-    try:
-        completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful engineering assistant."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.4,
-            max_tokens=400
-        )
-        ai_explanation = completion.choices[0].message.content.strip()
-    except Exception as e:
-        ai_explanation = f"Could not get AI explanation: {e}"
-
-    return jsonify({
-        "numericalResults": numerical_results,
-        "aiExplanation": ai_explanation
-    })
-
-@app.route("/api/ofdm-systems", methods=['POST'])
-def handle_ofdm():
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "Invalid request body"}), 400
-
-    numerical_results = calculate_ofdm_logic(data)
-    if "error" in numerical_results:
-        return jsonify(numerical_results), 400
-
-    prompt = f"""
-    Act as an expert wireless communications engineer explaining results to a student.
-
-    Scenario: OFDM System Design
-    The student provided these inputs: {data}
-    Our calculations produced these results: {numerical_results}
-
-    Please provide a clear, user-friendly explanation. Structure your response in three paragraphs:
-    1.  **Methodology:** Briefly explain HOW the main results (like data rate and spectral efficiency) were calculated from the inputs.
-    2.  **Results Explained:** Explain WHAT the results mean in practical terms. What does this data rate and efficiency signify for a real-world network?
-    3.  **Conclusion:** A brief concluding sentence on the system's performance.
+    Please provide a clear, user-friendly explanation based on the scenario.
+    For Wireless System, explain each block's impact on data rate.
+    For OFDM, explain data rate and spectral efficiency.
+    For Link Budget, explain the power calculation from sensitivity to gains/losses.
+    For Cellular Design, explain cell count, traffic (Erlang B), and cluster size.
     Keep the tone educational and encouraging.
     """
     try:
         completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful engineering assistant."},
-                {"role": "user", "content": prompt}
-            ],
+            messages=[{"role": "user", "content": prompt}],
             temperature=0.4,
-            max_tokens=350
+            max_tokens=400
         )
-        ai_explanation = completion.choices[0].message.content.strip()
+        return completion.choices[0].message.content.strip()
     except Exception as e:
-        ai_explanation = f"Could not get AI explanation: {e}"
+        return f"Could not get AI explanation: {e}"
 
+# --- Refactored API Endpoint (NO CHANGE HERE) ---
+def create_api_endpoint(calculation_function, scenario_name):
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Invalid request body"}), 400
+
+    numerical_results = calculation_function(data)
+    if "error" in numerical_results:
+        return jsonify(numerical_results), 400
+
+    ai_explanation = get_ai_explanation(scenario_name, data, numerical_results)
+    
     return jsonify({
         "numericalResults": numerical_results,
         "aiExplanation": ai_explanation
     })
+
+# --- Routes (NO CHANGE HERE) ---
+@app.route("/api/wireless-system", methods=['POST'])
+def handle_wireless_system():
+    return create_api_endpoint(calculate_wireless_system_logic, "Wireless Communication System")
+
+@app.route("/api/ofdm-systems", methods=['POST'])
+def handle_ofdm():
+    return create_api_endpoint(calculate_ofdm_logic, "OFDM System")
 
 @app.route("/api/link-budget", methods=['POST'])
 def handle_link_budget():
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "Invalid request body"}), 400
-
-    numerical_results = calculate_link_budget_logic(data)
-    if "error" in numerical_results:
-        return jsonify(numerical_results), 400
-
-    prompt = f"""
-    Act as an expert wireless communications engineer explaining results to a student.
-
-    Scenario: Link Budget Calculation
-    The student provided these inputs: {data}
-    Our calculations produced these results: {numerical_results}
-    
-    Please provide a clear, user-friendly explanation. Structure your response in three paragraphs:
-    1.  **Concept:** Briefly explain what a link budget is and why it's crucial for designing a reliable communication link.
-    2.  **Methodology:** Explain how the Required Transmitted Power was calculated. Start from the receiver sensitivity and logically add all the losses and gains to arrive at the final number.
-    3.  **Conclusion:** Explain the practical meaning of the Required Transmitted Power in Watts. What does this value tell the engineer about the type of transmitter they need to build or buy?
-    """
-    try:
-        completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful engineering assistant."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.4,
-            max_tokens=350
-        )
-        ai_explanation = completion.choices[0].message.content.strip()
-    except Exception as e:
-        ai_explanation = f"Could not get AI explanation: {e}"
-
-    return jsonify({
-        "numericalResults": numerical_results,
-        "aiExplanation": ai_explanation
-    })
+    return create_api_endpoint(calculate_link_budget_logic, "Link Budget Calculation")
 
 @app.route("/api/cellular-design", methods=['POST'])
 def handle_cellular_design():
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "Invalid request body"}), 400
-
-    numerical_results = calculate_cellular_design_logic(data)
-    if "error" in numerical_results:
-        return jsonify(numerical_results), 400
-
-    prompt = f"""
-    Act as an expert wireless communications engineer explaining results to a student.
-
-    Scenario: Cellular System Design
-    The student provided these inputs: {data}
-    Our calculations produced these results: {numerical_results}
-    
-    Please provide a clear, user-friendly explanation. Structure your response in four paragraphs:
-    1.  **Cell & Traffic Analysis:** Explain how the number of required cells was determined from the total area and cell radius. Then, explain how the total traffic was calculated in Erlangs and distributed per cell.
-    2.  **Grade of Service (GoS):** Explain the concept of the Erlang B model and how it was used to find the 'Required Channels per Cell' to meet the desired blocking probability (Grade of Service).
-    3.  **Frequency Reuse:** Explain what the 'Required Cluster Size (N)' means in the context of frequency reuse and managing co-channel interference (based on the provided SIR).
-    4.  **Conclusion:** A brief concluding summary of the designed system's capacity.
-    """
-    try:
-        completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful engineering assistant."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.4,
-            max_tokens=450
-        )
-        ai_explanation = completion.choices[0].message.content.strip()
-    except Exception as e:
-        ai_explanation = f"Could not get AI explanation: {e}"
-
-    return jsonify({
-        "numericalResults": numerical_results,
-        "aiExplanation": ai_explanation
-    })
+    return create_api_endpoint(calculate_cellular_design_logic, "Cellular System Design")
