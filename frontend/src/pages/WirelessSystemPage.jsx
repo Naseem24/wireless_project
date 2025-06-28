@@ -4,7 +4,7 @@ import axios from 'axios';
 import './CalculatorPage.css'; // We need to create this shared CSS file
 
 // !! IMPORTANT: Replace with your backend URL when ready to deploy
-const API_URL = "https://wireless-project-gokp.onrender.com/api/wireless-system";
+const API_URL = "https://wireless-project-backend.onrender.com/api/wireless-system";
 // Example Deployed URL: "https://your-backend-name.onrender.com/api/wireless-system"
 
 function WirelessSystemPage() {
