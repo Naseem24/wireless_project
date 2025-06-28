@@ -1,0 +1,218 @@
+/* frontend/src/pages/CalculatorPage.css */
+
+.calculator-page h1 {
+    font-size: 28px;
+    font-weight: 600;
+    margin-top: 0;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 30px;
+}
+
+.calculator-container {
+    display: flex;
+    gap: 40px;
+    max-width: 1200px;
+}
+
+.form-section {
+    flex: 1;
+    min-width: 350px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--secondary-text);
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 12px 15px;
+        background-color: var(--surface-dark);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--primary-text);
+        font-size: 16px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            You are absolutely correct. I should have included it. My apologies. Here is the full and final CSS code for the shared stylesheet. --- ### **Action: Create the Shared CSS File** 1. Inside your `frontend/src/pages` folder, create a new file named `CalculatorPage.css`. 2. Copy the **entire block of code** below and paste it into this new file. ```css
+            /* frontend/src/pages/CalculatorPage.css */
+            .calculator-page h1
+
+{
+    font-size: 28px;
+    font-weight: 600;
+    margin-top: 0;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.calculate-btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    background-color: var(--primary-blue);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+    .calculate-btn:hover {
+        background-color: var(--hover-blue);
+    }
+
+    .calculate-btn:disabled {
+        background-color: #374151;
+        cursor: not-allowed;
+    }
+
+.results-section {
+    flex: 1.5; /* Makes results area wider */
+}
+
+.results-box {
+    background-color: var(--surface-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 30px;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centers content vertically */
+    align-items: center; /* Centers content horizontally */
+    color: var(--secondary margin-bottom: 30px;
+}
+
+.calculator-container {
+    display: flex;
+    gap: 40px;
+    max-width: 1200px;
+}
+
+.form-section {
+    flex: 1; /* Takes up 1 part of the available space */
+    min-width: 350px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--secondary-text);
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 12px 15px;
+        background-color: var(--surface-dark);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--primary-text);
+        font-size: 16px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+.calculate-btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    background-color: var(--primary-blue);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+    .calculate-btn:hover {
+        background-color: var(--hover-blue);
+    }
+
+    .calculate-btn:disabled {
+        background-color: #3741-text);
+        font-size: 16px;
+    }
+
+.results-content {
+    width: 100%;
+    height: 100%;
+    text-align: left;
+}
+
+    .results-content h2 {
+        margin-top: 0;
+        color: var(--primary-blue);
+    }
+
+    .results-content h3 {
+        margin-bottom: 10px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+    }
+
+.numerical-results p, .ai-explanation p {
+    line-height: 1.6;
+    margin: 10px 0;
+}
+
+.numerical-results strong {
+    color: var(--primary-text);
+}
+
+.ai-explanation {
+    margin-top: 30px;
+}
+
+.spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 4px solid var(--primary-blue);
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.error-message {
+    color: #f87171; /* A light red for errors */
+    font-weight: 500;
+    text-align: center;
+}
