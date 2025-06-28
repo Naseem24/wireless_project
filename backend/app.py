@@ -14,7 +14,7 @@ app = Flask(__name__)
 
 # --- CONFIGURATION ---
 # Enable Cross-Origin Resource Sharing (CORS)
-CORS(app) 
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 # Initialize the OpenAI client with the API key
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
