@@ -4,7 +4,7 @@ import axios from 'axios';
 import './CalculatorPage.css';
 
 // !! IMPORTANT: Replace with your backend URL
-const API_URL = "https://wireless-project-qokp.onrender.com";
+const API_URL = "https://wireless-project-backend.onrender.com/api/cellular-design";
 
 function CellularDesignPage() {
     const [formData, setFormData] = useState({
