@@ -1,7 +1,8 @@
-# backend/app.py (Final Version)
+# backend/app.py (Final Version with Manual CORS)
 import os
 from flask import Flask, jsonify, request
-from flask_cors import CORS
+# We no longer need Flask-CORS, but it's okay to leave it in requirements.txt
+# from flask_cors import CORS 
 from dotenv import load_dotenv
 from openai import OpenAI
 from calculations import calculate_wireless_system_logic, calculate_ofdm_logic, calculate_link_budget_logic, calculate_cellular_design_logic
@@ -9,14 +10,24 @@ from calculations import calculate_wireless_system_logic, calculate_ofdm_logic, 
 load_dotenv()
 app = Flask(__name__)
 
-# --- FINAL CORS CONFIGURATION ---
-# This more direct configuration applies the headers to all routes.
-CORS(app, supports_credentials=True)
+# We are removing the CORS(app) line completely
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# --- Helper function for generating prompts (NO CHANGE HERE) ---
+# --- NEW: Manual CORS Header Function ---
+# This function will be called after every request to add the necessary headers.
+@app.after_request
+def after_request(response):
+    header = response.headers
+    header['Access-Control-Allow-Origin'] = '*' # Allow any domain
+    header['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+    header['Access-Control-Allow-Methods'] = 'POST, OPTIONS' # Allow POST and the preflight OPTIONS request
+    return response
+
+
+# --- Helper function for generating prompts (NO CHANGE) ---
 def get_ai_explanation(scenario_name, inputs, results):
+    # This function remains exactly the same as before
     prompt = f"""
     Act as an expert wireless communications engineer explaining results to a student.
 
@@ -42,7 +53,7 @@ def get_ai_explanation(scenario_name, inputs, results):
     except Exception as e:
         return f"Could not get AI explanation: {e}"
 
-# --- Refactored API Endpoint (NO CHANGE HERE) ---
+# --- Refactored API Endpoint (NO CHANGE) ---
 def create_api_endpoint(calculation_function, scenario_name):
     data = request.get_json()
     if not data:
@@ -59,7 +70,7 @@ def create_api_endpoint(calculation_function, scenario_name):
         "aiExplanation": ai_explanation
     })
 
-# --- Routes (NO CHANGE HERE) ---
+# --- Routes (NO CHANGE) ---
 @app.route("/api/wireless-system", methods=['POST'])
 def handle_wireless_system():
     return create_api_endpoint(calculate_wireless_system_logic, "Wireless Communication System")
