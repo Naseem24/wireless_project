@@ -1,0 +1,47 @@
+/* frontend/src/components/Sidebar.css */
+.sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background-color: var(--surface-dark);
+    color: var(--primary-text);
+    height: 100vh;
+    padding: 20px;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+    .sidebar h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-weight: 600;
+        color: var(--primary-blue);
+    }
+
+    .sidebar nav {
+        display: flex;
+        flex-direction: column;
+    }
+
+        .sidebar nav a {
+            color: var(--secondary-text);
+            text-decoration: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+            .sidebar nav a:hover {
+                background-color: var(--background-dark);
+                color: var(--primary-text);
+            }
+
+            .sidebar nav a.active {
+                background-color: var(--primary-blue);
+                color: var(--primary-text);
+                font-weight: 600;
+                box-shadow: 0 4px 15px -5px rgba(59, 130, 246, 0.5);
+            }
