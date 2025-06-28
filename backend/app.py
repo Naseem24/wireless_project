@@ -1,10 +1,11 @@
 # backend/app.py
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request  # <-- The 'request' object is now correctly imported here
 from flask_cors import CORS
 from dotenv import load_dotenv
 from openai import OpenAI
 from calculations import calculate_wireless_system_logic, calculate_ofdm_logic, calculate_link_budget_logic, calculate_cellular_design_logic
+
 # Load environment variables from the .env file
 load_dotenv()
 
@@ -22,7 +23,6 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 @app.route("/api/test")
 def test_endpoint():
     """A simple test endpoint to check if the backend is running."""
-    # We will add a simple AI call here just to test the key
     try:
         completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -38,9 +38,7 @@ def test_endpoint():
             "ai_status": ai_message
             })
     except Exception as e:
-        # If the API key is invalid or there's an issue, we'll see it here
         return jsonify({"error": f"AI connection failed: {str(e)}"}), 500
-    # Add this new endpoint to backend/app.py
 
 @app.route("/api/wireless-system", methods=['POST'])
 def handle_wireless_system():
@@ -83,7 +81,6 @@ def handle_wireless_system():
         "numericalResults": numerical_results,
         "aiExplanation": ai_explanation
     })
-# Add this new endpoint to backend/app.py
 
 @app.route("/api/ofdm-systems", methods=['POST'])
 def handle_ofdm():
@@ -126,7 +123,6 @@ def handle_ofdm():
         "numericalResults": numerical_results,
         "aiExplanation": ai_explanation
     })
-# Add this new endpoint to backend/app.py
 
 @app.route("/api/link-budget", methods=['POST'])
 def handle_link_budget():
@@ -168,7 +164,6 @@ def handle_link_budget():
         "numericalResults": numerical_results,
         "aiExplanation": ai_explanation
     })
-# Add this final endpoint to backend/app.py
 
 @app.route("/api/cellular-design", methods=['POST'])
 def handle_cellular_design():
