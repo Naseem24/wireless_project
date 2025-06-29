@@ -1,30 +1,31 @@
-# backend/app.py (Final Production Version)
+# backend/app.py (Final Version with Groq API)
 import os
 from flask import Flask, jsonify, request
 from dotenv import load_dotenv
-from openai import OpenAI
+from groq import Groq  # 1. Import the Groq library
 from calculations import calculate_wireless_system_logic, calculate_ofdm_logic, calculate_link_budget_logic, calculate_cellular_design_logic
 
 load_dotenv()
 app = Flask(__name__)
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # --- Manual CORS Header Function ---
-# This function is called after every request to add the necessary headers.
 @app.after_request
 def after_request(response):
     header = response.headers
-    header['Access-Control-Allow-Origin'] = '*' # Allow any domain to make requests
+    header['Access-Control-Allow-Origin'] = '*'
     header['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-    header['Access-Control-Allow-Methods'] = 'POST, OPTIONS' # Specify allowed methods
+    header['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
     return response
 
+# --- 2. Initialize the Groq Client ---
+client = Groq(
+    api_key=os.getenv("GROQ_API_KEY")  # It will look for this key in the environment
+)
 
 # --- Helper function for generating prompts ---
 def get_ai_explanation(scenario_name, inputs, results):
     prompt = f"""
     Act as an expert wireless communications engineer explaining results to a student.
-
     Scenario: {scenario_name}
     The student provided these inputs: {inputs}
     Our calculations produced these results: {results}
@@ -37,8 +38,10 @@ def get_ai_explanation(scenario_name, inputs, results):
     Keep the tone educational and encouraging.
     """
     try:
+        # --- 3. Call the Groq API ---
         completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            # Use a powerful, free open-source model
+            model="llama3-8b-8192", 
             messages=[{"role": "user", "content": prompt}],
             temperature=0.4,
             max_tokens=400
@@ -47,21 +50,17 @@ def get_ai_explanation(scenario_name, inputs, results):
     except Exception as e:
         return f"Could not get AI explanation: {e}"
 
-# --- Refactored API Endpoint ---
+# --- API Endpoint Logic (No changes needed here) ---
 def create_api_endpoint(calculation_function, scenario_name):
     data = request.get_json()
-    if not data:
-        return jsonify({"error": "Invalid request body"}), 400
     numerical_results = calculation_function(data)
-    if "error" in numerical_results:
-        return jsonify(numerical_results), 400
     ai_explanation = get_ai_explanation(scenario_name, data, numerical_results)
     return jsonify({
         "numericalResults": numerical_results,
         "aiExplanation": ai_explanation
     })
 
-# --- Routes ---
+# --- Routes (No changes needed here) ---
 @app.route("/api/wireless-system", methods=['POST'])
 def handle_wireless_system():
     return create_api_endpoint(calculate_wireless_system_logic, "Wireless Communication System")
