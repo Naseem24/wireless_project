@@ -1,14 +1,15 @@
-# backend/app.py (Final Version with Groq API)
+# backend/app.py (Final, Definitive Version)
 import os
 from flask import Flask, jsonify, request
 from dotenv import load_dotenv
-from groq import Groq  # 1. Import the Groq library
+import httpx  # <-- 1. Import the httpx library
+from groq import Groq
 from calculations import calculate_wireless_system_logic, calculate_ofdm_logic, calculate_link_budget_logic, calculate_cellular_design_logic
 
 load_dotenv()
 app = Flask(__name__)
 
-# --- Manual CORS Header Function ---
+# --- Manual CORS Header Function (This is correct, no change) ---
 @app.after_request
 def after_request(response):
     header = response.headers
@@ -17,19 +18,24 @@ def after_request(response):
     header['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
     return response
 
-# --- 2. Initialize the Groq Client ---
+# --- 2. THE DEFINITIVE FIX ---
+# Create a custom httpx client that explicitly IGNORES any proxy settings from the environment.
+custom_http_client = httpx.Client(proxies=None)
+
+# Initialize the Groq client, passing in our custom, clean http client.
 client = Groq(
-    api_key=os.getenv("GROQ_API_KEY")  # It will look for this key in the environment
+    api_key=os.getenv("GROQ_API_KEY"),
+    http_client=custom_http_client
 )
 
-# --- Helper function for generating prompts ---
+# --- The rest of the file is correct and does not need to change. ---
+
 def get_ai_explanation(scenario_name, inputs, results):
     prompt = f"""
     Act as an expert wireless communications engineer explaining results to a student.
     Scenario: {scenario_name}
     The student provided these inputs: {inputs}
     Our calculations produced these results: {results}
-    
     Please provide a clear, user-friendly explanation based on the scenario.
     For Wireless System, explain each block's impact on data rate.
     For OFDM, explain data rate and spectral efficiency.
@@ -38,10 +44,8 @@ def get_ai_explanation(scenario_name, inputs, results):
     Keep the tone educational and encouraging.
     """
     try:
-        # --- 3. Call the Groq API ---
         completion = client.chat.completions.create(
-            # Use a powerful, free open-source model
-            model="llama3-8b-8192", 
+            model="llama3-8b-8192",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.4,
             max_tokens=400
@@ -50,7 +54,6 @@ def get_ai_explanation(scenario_name, inputs, results):
     except Exception as e:
         return f"Could not get AI explanation: {e}"
 
-# --- API Endpoint Logic (No changes needed here) ---
 def create_api_endpoint(calculation_function, scenario_name):
     data = request.get_json()
     numerical_results = calculation_function(data)
@@ -60,7 +63,6 @@ def create_api_endpoint(calculation_function, scenario_name):
         "aiExplanation": ai_explanation
     })
 
-# --- Routes (No changes needed here) ---
 @app.route("/api/wireless-system", methods=['POST'])
 def handle_wireless_system():
     return create_api_endpoint(calculate_wireless_system_logic, "Wireless Communication System")
