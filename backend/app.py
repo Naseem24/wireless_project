@@ -1,15 +1,13 @@
-# backend/app.py (Final, Definitive Version)
+# backend/app.py (Final, Simple Version)
 import os
 from flask import Flask, jsonify, request
 from dotenv import load_dotenv
-import httpx  # <-- 1. Import the httpx library
 from groq import Groq
 from calculations import calculate_wireless_system_logic, calculate_ofdm_logic, calculate_link_budget_logic, calculate_cellular_design_logic
 
 load_dotenv()
 app = Flask(__name__)
 
-# --- Manual CORS Header Function (This is correct, no change) ---
 @app.after_request
 def after_request(response):
     header = response.headers
@@ -18,17 +16,10 @@ def after_request(response):
     header['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
     return response
 
-# --- 2. THE DEFINITIVE FIX ---
-# Create a custom httpx client that explicitly IGNORES any proxy settings from the environment.
-custom_http_client = httpx.Client(proxies=None)
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-# Initialize the Groq client, passing in our custom, clean http client.
-client = Groq(
-    api_key=os.getenv("GROQ_API_KEY"),
-    http_client=custom_http_client
-)
-
-# --- The rest of the file is correct and does not need to change. ---
+# ... The rest of the file (get_ai_explanation, create_api_endpoint, and all the routes) remains exactly the same as before ...
+# (I am omitting it for brevity, but you can use the code from the previous working step)
 
 def get_ai_explanation(scenario_name, inputs, results):
     prompt = f"""
